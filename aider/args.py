@@ -366,6 +366,18 @@ def get_parser(default_config_files, git_root):
         ),
     )
     group.add_argument(
+        "--completion-menu-reserve-space",
+        type=int,
+        default=4,
+        help="Number of lines to reserve for completion menu (default: 4)",
+    )
+    group.add_argument(
+        "--completion-menu-multicolumn",
+        action=argparse.BooleanOptionalAction,
+        default=True,
+        help="Use multi-column layout for completion menu (default: True)",
+    )
+    group.add_argument(
         "--code-theme",
         default="default",
         help=(

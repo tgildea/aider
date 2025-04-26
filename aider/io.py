@@ -263,6 +263,8 @@ class InputOutput:
         root=".",
         notifications=False,
         notifications_command=None,
+        completion_menu_reserve_space=4,
+        completion_menu_multicolumn=True,
     ):
         self.placeholder = None
         self.interrupted = False
@@ -275,6 +277,9 @@ class InputOutput:
             self.notifications_command = self.get_default_notification_command()
         else:
             self.notifications_command = notifications_command
+
+        self.completion_menu_reserve_space = completion_menu_reserve_space
+        self.completion_menu_multicolumn = completion_menu_multicolumn
 
         no_color = os.environ.get("NO_COLOR")
         if no_color is not None and no_color != "":
@@ -651,8 +656,8 @@ class InputOutput:
                         show,
                         default=default,
                         completer=completer_instance,
-                        reserve_space_for_menu=4,
-                        complete_style=CompleteStyle.MULTI_COLUMN,
+                        reserve_space_for_menu=self.completion_menu_reserve_space,
+                        complete_style=CompleteStyle.MULTI_COLUMN if self.completion_menu_multicolumn else CompleteStyle.COLUMN,
                         style=style,
                         key_bindings=kb,
                         complete_while_typing=True,

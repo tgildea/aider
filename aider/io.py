@@ -90,12 +90,20 @@ class ConfirmGroup:
 
 class AutoCompleter(Completer):
     def __init__(
-        self, root, rel_fnames, addable_rel_fnames, commands, encoding, abs_read_only_fnames=None
+        self,
+        root,
+        rel_fnames,
+        addable_rel_fnames,
+        commands,
+        encoding,
+        abs_read_only_fnames=None,
+        subsequence_matching=False
     ):
         self.addable_rel_fnames = addable_rel_fnames
         self.rel_fnames = rel_fnames
         self.encoding = encoding
         self.abs_read_only_fnames = abs_read_only_fnames or []
+        self.subsequence_matching = subsequence_matching
 
         fname_to_rel_fnames = defaultdict(list)
         for rel_fname in addable_rel_fnames:
@@ -179,7 +187,18 @@ class AutoCompleter(Completer):
         if candidates is None:
             return
 
-        candidates = [word for word in candidates if partial in word.lower()]
+        def is_subsequence(needle, haystack):
+            needle_idx = 0
+            for char in haystack:
+                if needle_idx < len(needle) and char == needle[needle_idx]:
+                    needle_idx += 1
+            return needle_idx == len(needle)
+
+        if self.subsequence_matching:
+            candidates = [w for w in candidates if is_subsequence(partial, w.lower())]
+        else:
+            candidates = [w for w in candidates if partial in w.lower()]
+
         for candidate in sorted(candidates):
             yield Completion(candidate, start_position=-len(words[-1]))
 
@@ -261,6 +280,7 @@ class InputOutput:
         file_watcher=None,
         multiline_mode=False,
         root=".",
+        completion_subsequence_matching=False,
         notifications=False,
         notifications_command=None,
     ):
@@ -270,6 +290,7 @@ class InputOutput:
         self.editingmode = editingmode
         self.multiline_mode = multiline_mode
         self.bell_on_next_input = False
+        self.completion_subsequence_matching = completion_subsequence_matching
         self.notifications = notifications
         if notifications and notifications_command is None:
             self.notifications_command = self.get_default_notification_command()
@@ -557,8 +578,9 @@ class InputOutput:
                 rel_fnames,
                 addable_rel_fnames,
                 commands,
-                self.encoding,
+                encoding=self.encoding,
                 abs_read_only_fnames=abs_read_only_fnames,
+                subsequence_matching=self.completion_subsequence_matching,
             )
         )
 

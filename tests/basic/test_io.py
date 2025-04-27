@@ -90,6 +90,7 @@ class TestInputOutput(unittest.TestCase):
         addable_rel_fnames = []
         autocompleter = AutoCompleter(
             root=root,
+            subsequence_matching=False,  # Default prefix matching
             rel_fnames=rel_fnames,
             addable_rel_fnames=addable_rel_fnames,
             commands=commands,
@@ -97,15 +98,17 @@ class TestInputOutput(unittest.TestCase):
         )
 
         # Step 5: Set up test cases
-        test_cases = [
-            # Input text, Expected completion texts
+        prefix_test_cases = [
+            # Prefix matching tests
             ("/", ["/help", "/add", "/drop"]),
             ("/a", ["/add"]),
             ("/add f", ["file1.txt", "file2.txt"]),
+            ("/add file", ["file1.txt", "file2.txt"]),
+            ("/add file2", ["file2.txt"]),
         ]
 
-        # Step 6: Iterate through test cases
-        for text, expected_completions in test_cases:
+        # Test prefix matching
+        for text, expected_completions in prefix_test_cases:
             document = Document(text=text)
             complete_event = CompleteEvent()
             words = text.strip().split()
@@ -120,11 +123,39 @@ class TestInputOutput(unittest.TestCase):
                 )
             )
 
-            # Extract completion texts
             completion_texts = [comp.text for comp in completions]
-
-            # Assert that the completions match expected results
             self.assertEqual(set(completion_texts), set(expected_completions))
+
+        # Test subsequence matching
+        autocompleter.subsequence_matching = True
+        subsequence_test_cases = [
+            # Subsequence matching tests
+            ("/add f2", ["file2.txt"]),
+            ("/add f2txt", ["file2.txt"]),
+            ("/add 1", ["file1.txt"]),
+            ("/add txt", ["file1.txt", "file2.txt"]),
+            ("/add ile", ["file1.txt", "file2.txt"]),
+        ]
+
+        for text, expected_completions in subsequence_test_cases:
+            print(f"Testing subsequence matching for: {text}")
+            document = Document(text=text)
+            complete_event = CompleteEvent()
+            words = text.strip().split()
+
+            # Call get_command_completions
+            completions = list(
+                autocompleter.get_command_completions(
+                    document,
+                    complete_event,
+                    text,
+                    words,
+                )
+            )
+            completion_texts = [comp.text for comp in completions]
+            self.assertEqual(set(completion_texts), set(expected_completions))
+            # Verify non-matches don't appear
+            self.assertNotIn("non_existent.txt", completion_texts)
 
     def test_autocompleter_with_non_existent_file(self):
         root = ""

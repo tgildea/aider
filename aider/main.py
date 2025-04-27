@@ -566,6 +566,7 @@ def main(argv=None, input=None, output=None, force_git_root=None, return_coder=F
             editingmode=editing_mode,
             fancy_input=args.fancy_input,
             multiline_mode=args.multiline,
+            completion_subsequence_matching=args.completion_subsequence_matching,
             notifications=args.notifications,
             notifications_command=args.notifications_command,
         )

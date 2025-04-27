@@ -772,6 +772,15 @@ def get_parser(default_config_files, git_root):
         help="Enable/disable multi-line input mode with Meta-Enter to submit (default: False)",
     )
     group.add_argument(
+        "--completion-subsequence-matching",
+        action="store_true",
+        default=False,
+        help=(
+            "Enable subsequence matching for command completions, e.g. f2 matches file2 (default:"
+            " False)"
+        ),
+    )
+    group.add_argument(
         "--notifications",
         action=argparse.BooleanOptionalAction,
         default=False,
